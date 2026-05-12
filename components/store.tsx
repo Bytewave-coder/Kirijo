@@ -30,21 +30,37 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+  const loadData = async () => {
     let w = [];
     let s = { ...defaultSettings };
+
     try {
       const savedWishes = localStorage.getItem('kirijo_wishes');
-      if (savedWishes) w = JSON.parse(savedWishes);
+
+      if (savedWishes) {
+        w = JSON.parse(savedWishes);
+      }
+
       const savedSettings = localStorage.getItem('kirijo_settings');
-      if (savedSettings) s = { ...defaultSettings, ...JSON.parse(savedSettings) };
+
+      if (savedSettings) {
+        s = {
+          ...defaultSettings,
+          ...JSON.parse(savedSettings),
+        };
+      }
     } catch (e) {
       console.error(e);
     }
+
     setWishes(w);
     setSettings(s);
     setLoaded(true);
-  }, []);
+  };
 
+  loadData();
+}, []);
+  
   useEffect(() => {
     if (loaded) {
       localStorage.setItem('kirijo_wishes', JSON.stringify(wishes));
