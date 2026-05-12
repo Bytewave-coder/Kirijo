@@ -1,0 +1,9 @@
+Add these packages to your project:
+
+npm install @capacitor/core @capacitor/cli @capacitor/android
+
+Then run:
+
+npx cap init
+npx cap add android
+npx cap sync
