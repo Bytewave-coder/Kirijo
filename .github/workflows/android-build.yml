@@ -25,29 +25,19 @@ jobs:
         run: npm run build
 
       - name: Install Capacitor
-        run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
 
       - name: Create Android Project
-        run: |
-          npx cap add android || true
+        run: npx cap add android || true
 
       - name: Sync Capacitor
-        run: |
-          npx cap sync android
+        run: npx cap sync android
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-
-      - name: Force Java 17 Compatibility
-        run: |
-          find android -name "*.gradle" -exec sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' {} +
-          find android -name "*.gradle" -exec sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' {} +
-          find android -name "*.gradle.kts" -exec sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' {} +
-          find android -name "*.gradle.kts" -exec sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' {} +
+          java-version: 21
 
       - name: Build APK
         run: |
