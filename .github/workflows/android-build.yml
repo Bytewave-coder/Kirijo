@@ -25,13 +25,24 @@ jobs:
         run: npm run build
 
       - name: Install Capacitor
-        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
 
       - name: Create Android Project
-        run: npx cap add android || true
+        run: |
+          npx cap add android || true
 
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: |
+          npx cap sync android
+
+      - name: Install Capacitor Assets
+        run: |
+          npm install -g @capacitor/assets
+
+      - name: Generate App Icon From Assets
+        run: |
+          capacitor-assets generate --android
 
       - name: Force Kotlin Dependency Version
         run: |
