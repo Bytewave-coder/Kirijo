@@ -1,10 +1,8 @@
-import type { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
-  appId: 'com.byteswave.aistudio',
-  appName: 'AI Studio Applet',
+const config = {
+  appId: 'com.byteswave.kirijo',
+  appName: 'kirijo',
   webDir: 'out',
-  bundledWebRuntime: false
+  bundledWebRuntime: false,
 };
 
 export default config;
