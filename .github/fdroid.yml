@@ -1,0 +1,52 @@
+Categories:
+  - Productivity
+
+License: MIT
+
+AuthorName: Byteswave
+AuthorEmail: bytewavext@gmail.com
+
+SourceCode: https://github.com/Bytewave-coder/Kirijo
+IssueTracker: https://github.com/Bytewave-coder/Kirijo/issues
+
+AutoName: Kirijo
+
+Summary: Cyberpunk styled wish journal app
+Description: |
+  Kirijo — Wish Journal
+
+Kirijo is a beautifully designed offline wish journal app inspired by futuristic cyberpunk aesthetics and clean minimal interfaces.
+
+The app helps users capture dreams, goals, personal wishes, memories, and aspirations in a private and organized space. Designed with smooth animations, glowing UI effects, and multiple visual themes, Kirijo transforms simple note-taking into an immersive experience.
+
+Features
+
+- Beautiful cyberpunk inspired interface
+- Fully offline functionality
+- Create and manage personal wishes
+- Categories for better organization
+- Mark wishes as important
+- Archive completed or old wishes
+- Search and filter system
+- Multiple themes:
+  - Dark
+  - Midnight
+  - Forest
+  - Blossom
+  - Light
+- Import and export wishes as JSON
+- Modern smooth animations and transitions
+- Privacy-focused design
+- Lightweight and fast performance
+
+Design Philosophy
+
+Kirijo focuses on emotional and aesthetic interaction rather than traditional productivity tools. The interface is designed to feel calming, futuristic, and expressive while remaining simple and distraction-free.
+
+Privacy
+
+Kirijo does not collect user data, require accounts, or depend on cloud services. All wishes remain stored locally on the user's device.
+
+Open Source
+
+Kirijo is fully open source and community driven.
