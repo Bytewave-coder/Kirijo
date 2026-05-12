@@ -36,20 +36,27 @@ jobs:
         run: |
           npx cap sync android
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Force Java 17 Compatibility
         run: |
-         sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' android/**/*.gradle
-         sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' android/**/*.gradle
+          find android -name "*.gradle" -exec sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' {} +
+          find android -name "*.gradle" -exec sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' {} +
+          find android -name "*.gradle.kts" -exec sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' {} +
+          find android -name "*.gradle.kts" -exec sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' {} +
 
       - name: Build APK
-          run: | 
-           cd android
-            chmod +x gradlew
-            ./gradlew assembleDebug
-    
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-           name: kirijo-apk
-           path: android/app/build/outputs/apk/debug/app-debug.apk
- 
+          name: kirijo-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
