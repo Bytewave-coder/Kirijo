@@ -105,22 +105,6 @@ jobs:
           }
           EOF
 
-      - name: Force Java Compatibility
-        run: |
-          cat <<'EOF' >> android/app/build.gradle
-
-          android {
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-
-              kotlinOptions {
-                  jvmTarget = "17"
-              }
-          }
-          EOF
-
       - name: Build Release APK
         run: |
           cd android
