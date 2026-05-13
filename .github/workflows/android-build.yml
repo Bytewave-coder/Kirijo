@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -32,7 +32,7 @@ jobs:
 
       - name: Export Static Files
         run: |
-          npx next export || npm run export || true
+          npx next export || true
 
       - name: Install Capacitor
         run: |
@@ -56,39 +56,35 @@ jobs:
 
       - name: Inject Kotlin Native Files
         run: |
-          mkdir -p android/app/src/main/java/com/kirijo/app
-          cp kotlin-native/*.kt android/app/src/main/java/com/kirijo/app/ || true
+          mkdir -p android/app/src/main/java/com/byteswave/kirijo
+          cp kotlin-native/*.kt android/app/src/main/java/com/byteswave/kirijo/ || true
 
-      - name: Create Android Manifest
+      - name: Fix Android Gradle Settings
         run: |
-          mkdir -p android/app/src/main
+          cat <<'EOF' >> android/app/build.gradle
 
-          cat <<'EOF' > android/app/src/main/AndroidManifest.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package="com.byteswave.kirijo">
+          android {
+              namespace "com.byteswave.kirijo"
 
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
 
-              <application
-                  android:allowBackup="true"
-                  android:label="Kirijo"
-                  android:supportsRtl="true">
+          tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
 
-              </application>
-
-          </manifest>
           EOF
 
       - name: Add WorkManager Dependency
         run: |
-          echo '
-          dependencies {
-              implementation "androidx.work:work-runtime-ktx:2.9.0"
-          }
-          ' >> android/app/build.gradle
+          sed -i '/dependencies {/a\
+              implementation "androidx.work:work-runtime-ktx:2.9.0"' \
+              android/app/build.gradle
 
       - name: Force Kotlin Dependency Version
         run: |
@@ -103,7 +99,21 @@ jobs:
                   }
               }
           }
+
           EOF
+
+      - name: Remove Invalid Manifest Package
+        run: |
+          sed -i 's/package="com.byteswave.kirijo"//g' \
+          android/app/src/main/AndroidManifest.xml || true
+
+      - name: Force Java 17 Everywhere
+        run: |
+          find android -type f \( -name "*.gradle" -o -name "*.gradle.kts" \) \
+          -exec sed -i 's/VERSION_21/VERSION_17/g' {} \;
+
+          find android -type f \( -name "*.gradle" -o -name "*.gradle.kts" \) \
+          -exec sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' {} \;
 
       - name: Build Release APK
         run: |
