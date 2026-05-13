@@ -1,13 +1,14 @@
 name: Build Android APK
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout Repository
@@ -16,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -31,72 +32,61 @@ jobs:
         run: npm run build
 
       - name: Export Static Files
-        run: |
-          npx next export || true
+        run: npx next export
 
-      - name: Install Capacitor v6
+      - name: Install Capacitor + Filesystem Plugin
         run: |
-          npm install @capacitor/core@6.1.2
-          npm install @capacitor/cli@6.1.2
-          npm install @capacitor/android@6.1.2
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/filesystem
 
       - name: Create Android Project
         run: |
-          npx cap add android || true
+          npx cap add android
+
+      - name: Add Android Permissions
+        run: |
+          sed -i '/<manifest/a\
+          <uses-permission android:name="android.permission.INTERNET" />\
+          <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\
+          <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\
+          <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />' android/app/src/main/AndroidManifest.xml
+
+      - name: Add Launcher Activity
+        run: |
+          sed -i '/<activity/a\
+                  <intent-filter>\
+                      <action android:name="android.intent.action.MAIN" />\
+                      <category android:name="android.intent.category.LAUNCHER" />\
+                  </intent-filter>' android/app/src/main/AndroidManifest.xml
 
       - name: Sync Capacitor
         run: |
           npx cap sync android
 
-      - name: Install Capacitor Assets
-        run: |
-          npm install -g @capacitor/assets
-
-      - name: Generate Android Icons
-        run: |
-          capacitor-assets generate --android
-
-      - name: Inject Kotlin Native Files
-        run: |
-          mkdir -p android/app/src/main/java/com/byteswave/kirijo
-          cp kotlin-native/*.kt android/app/src/main/java/com/byteswave/kirijo/ || true
-
-      - name: Create Android Manifest
-        run: |
-          mkdir -p android/app/src/main
-
-          cat <<'EOF' > android/app/src/main/AndroidManifest.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
-              <application
-                  android:allowBackup="true"
-                  android:label="Kirijo"
-                  android:supportsRtl="true">
-              </application>
-
-          </manifest>
-          EOF
-
       - name: Force Java 17 Compatibility
         run: |
-          sed -i 's/VERSION_21/VERSION_17/g' android/**/*.gradle || true
-          sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' android/**/*.gradle || true
-          sed -i 's/sourceCompatibility = JavaVersion.VERSION_21/sourceCompatibility = JavaVersion.VERSION_17/g' android/**/*.gradle || true
-          sed -i 's/targetCompatibility = JavaVersion.VERSION_21/targetCompatibility = JavaVersion.VERSION_17/g' android/**/*.gradle || true
+          echo '
+          android {
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+
+          tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
+          ' >> android/app/build.gradle
 
       - name: Build Release APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean assembleRelease --stacktrace
+          ./gradlew assembleRelease
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: kirijo-release-apk
-          path: android/app/build/outputs/apk/release/*.apk
+          path: path: android/app/build/outputs/apk/release/*.apk
