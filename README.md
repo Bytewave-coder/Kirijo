@@ -8,17 +8,17 @@ Built with a strong focus on **clean UI**, **smooth animations**, **custom theme
 ![Linux](https://img.shields.io/badge/Linux-black?logo=linux&logoColor=FCC624)
 ![GitHub](https://img.shields.io/badge/GitHub-Repo-black?logo=github)
 ![Next JS](https://img.shields.io/badge/Next.js-black?logo=next.js)
-
 ![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript)
 ![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?logo=capacitor&logoColor=white)
 
 
 ![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=white)
-
 ![License](https://img.shields.io/badge/License-MIT-22C55E)
 ![Version](https://img.shields.io/badge/Version-v1.5.0-F472B6)
+![React](https://img.shields.io/badge/Built%20with-React-61DAFB?logo=react&logoColor=black)
 
-
+![React App](https://img.shields.io/badge/React-App-20232A?logo=react&logoColor=61DAFB)
+![React Native](https://img.shields.io/badge/React-Native-20232A?logo=react&logoColor=61DAFB)
 ![Offline](https://img.shields.io/badge/Offline-Supported-0EA5E9)
 
 ![Kirijo](https://img.shields.io/badge/Kirijo-Wish%20Journal-7C3AED?logo=github&logoColor=white)
