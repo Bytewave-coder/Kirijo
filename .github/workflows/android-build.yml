@@ -3,6 +3,10 @@ name: Build Android APK
 on:
   workflow_dispatch:
 
+  push:
+    branches:
+      - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,21 +38,24 @@ jobs:
       - name: Export Static Files
         run: npx next export
 
-      - name: Install Capacitor + Filesystem Plugin
+      - name: Install Capacitor
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/filesystem
+          npm install @capacitor/core @capacitor/cli @capacitor/android
 
       - name: Create Android Project
         run: |
           npx cap add android
 
+      - name: Sync Capacitor
+        run: |
+          npx cap sync android
+
       - name: Add Android Permissions
         run: |
           sed -i '/<manifest/a\
-          <uses-permission android:name="android.permission.INTERNET" />\
-          <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\
-          <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\
-          <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />' android/app/src/main/AndroidManifest.xml
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>\
+              <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
 
       - name: Add Launcher Activity
         run: |
@@ -57,10 +64,6 @@ jobs:
                       <action android:name="android.intent.action.MAIN" />\
                       <category android:name="android.intent.category.LAUNCHER" />\
                   </intent-filter>' android/app/src/main/AndroidManifest.xml
-
-      - name: Sync Capacitor
-        run: |
-          npx cap sync android
 
       - name: Force Java 17 Compatibility
         run: |
@@ -85,8 +88,12 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
+      - name: Rename APK
+        run: |
+          mv android/app/build/outputs/apk/release/app-release-unsigned.apk kirijo.apk
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: kirijo-release-apk
-          path: path: android/app/build/outputs/apk/release/*.apk
+          path: kirijo.apk
