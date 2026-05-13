@@ -3,7 +3,7 @@ name: Build Android APK
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -34,9 +34,11 @@ jobs:
         run: |
           npx next export || true
 
-      - name: Install Capacitor
+      - name: Install Capacitor v6
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core@6.1.2
+          npm install @capacitor/cli@6.1.2
+          npm install @capacitor/android@6.1.2
 
       - name: Create Android Project
         run: |
@@ -67,9 +69,9 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
               <application
                   android:allowBackup="true"
@@ -80,45 +82,12 @@ jobs:
           </manifest>
           EOF
 
-      - name: Add WorkManager Dependency
-        run: |
-          sed -i '/dependencies {/a\
-              implementation "androidx.work:work-runtime-ktx:2.9.0"' \
-              android/app/build.gradle
-
-      - name: Force Kotlin Dependency Version
-        run: |
-          cat <<'EOF' >> android/build.gradle
-
-          subprojects {
-              configurations.all {
-                  resolutionStrategy {
-                      force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-                  }
-              }
-          }
-
-          EOF
-
       - name: Force Java 17 Compatibility
         run: |
-          cat <<'EOF' >> android/app/build.gradle
-
-          android {
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-          }
-
-          EOF
-
-      - name: Replace Java 21 References
-        run: |
-          find android -type f \( -name "*.gradle" -o -name "*.gradle.kts" \) \
-          -exec sed -i 's/VERSION_21/VERSION_17/g' {} \;
+          sed -i 's/VERSION_21/VERSION_17/g' android/**/*.gradle || true
+          sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' android/**/*.gradle || true
+          sed -i 's/sourceCompatibility = JavaVersion.VERSION_21/sourceCompatibility = JavaVersion.VERSION_17/g' android/**/*.gradle || true
+          sed -i 's/targetCompatibility = JavaVersion.VERSION_21/targetCompatibility = JavaVersion.VERSION_17/g' android/**/*.gradle || true
 
       - name: Build Release APK
         run: |
