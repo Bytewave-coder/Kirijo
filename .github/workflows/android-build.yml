@@ -59,25 +59,25 @@ jobs:
           mkdir -p android/app/src/main/java/com/byteswave/kirijo
           cp kotlin-native/*.kt android/app/src/main/java/com/byteswave/kirijo/ || true
 
-      - name: Fix Android Gradle Settings
+      - name: Create Android Manifest
         run: |
-          cat <<'EOF' >> android/app/build.gradle
+          mkdir -p android/app/src/main
 
-          android {
-              namespace "com.byteswave.kirijo"
+          cat <<'EOF' > android/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-          }
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-          tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-              kotlinOptions {
-                  jvmTarget = "17"
-              }
-          }
+              <application
+                  android:allowBackup="true"
+                  android:label="Kirijo"
+                  android:supportsRtl="true">
+              </application>
 
+          </manifest>
           EOF
 
       - name: Add WorkManager Dependency
@@ -102,18 +102,23 @@ jobs:
 
           EOF
 
-      - name: Remove Invalid Manifest Package
+      - name: Force Java 17 Compatibility
         run: |
-          sed -i 's/package="com.byteswave.kirijo"//g' \
-          android/app/src/main/AndroidManifest.xml || true
+          cat <<'EOF' >> android/app/build.gradle
 
-      - name: Force Java 17 Everywhere
+          android {
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+
+          EOF
+
+      - name: Replace Java 21 References
         run: |
           find android -type f \( -name "*.gradle" -o -name "*.gradle.kts" \) \
           -exec sed -i 's/VERSION_21/VERSION_17/g' {} \;
-
-          find android -type f \( -name "*.gradle" -o -name "*.gradle.kts" \) \
-          -exec sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' {} \;
 
       - name: Build Release APK
         run: |
