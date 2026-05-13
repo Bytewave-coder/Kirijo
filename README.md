@@ -4,6 +4,13 @@
 
 Built with a strong focus on **clean UI**, **smooth animations**, **custom themes**, and **easy wish management**, Kirijo turns journaling into a more visual and meaningful experience.
 
+![Android](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-black?logo=linux&logoColor=FCC624)
+![GitHub](https://img.shields.io/badge/GitHub-Repo-black?logo=github)
+![Next JS](https://img.shields.io/badge/Next.js-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript)
+![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?logo=capacitor&logoColor=white)
+
 ---
 
 ## What is Kirijo?
