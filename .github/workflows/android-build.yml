@@ -59,6 +59,29 @@ jobs:
           mkdir -p android/app/src/main/java/com/kirijo/app
           cp kotlin-native/*.kt android/app/src/main/java/com/kirijo/app/ || true
 
+      - name: Create Android Manifest
+        run: |
+          mkdir -p android/app/src/main
+
+          cat <<'EOF' > android/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.kirijo.app">
+
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+              <application
+                  android:allowBackup="true"
+                  android:label="Kirijo"
+                  android:supportsRtl="true">
+
+              </application>
+
+          </manifest>
+          EOF
+
       - name: Add WorkManager Dependency
         run: |
           echo '
@@ -82,11 +105,27 @@ jobs:
           }
           EOF
 
+      - name: Force Java Compatibility
+        run: |
+          cat <<'EOF' >> android/app/build.gradle
+
+          android {
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
+          EOF
+
       - name: Build Release APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean assembleRelease
+          ./gradlew clean assembleRelease --stacktrace
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
