@@ -3,7 +3,7 @@ name: Build Android APK
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -18,11 +18,21 @@ jobs:
         with:
           node-version: 20
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Install Dependencies
         run: npm install
 
       - name: Build Next.js App
         run: npm run build
+
+      - name: Export Static Files
+        run: |
+          npx next export || npm run export || true
 
       - name: Install Capacitor
         run: |
@@ -40,9 +50,22 @@ jobs:
         run: |
           npm install -g @capacitor/assets
 
-      - name: Generate App Icon From Assets
+      - name: Generate Android Icons
         run: |
           capacitor-assets generate --android
+
+      - name: Inject Kotlin Native Files
+        run: |
+          mkdir -p android/app/src/main/java/com/kirijo/app
+          cp kotlin-native/*.kt android/app/src/main/java/com/kirijo/app/ || true
+
+      - name: Add WorkManager Dependency
+        run: |
+          echo '
+          dependencies {
+              implementation "androidx.work:work-runtime-ktx:2.9.0"
+          }
+          ' >> android/app/build.gradle
 
       - name: Force Kotlin Dependency Version
         run: |
@@ -59,13 +82,7 @@ jobs:
           }
           EOF
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Build APK
+      - name: Build Release APK
         run: |
           cd android
           chmod +x gradlew
@@ -74,5 +91,5 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kirijo-apk
+          name: kirijo-release-apk
           path: android/app/build/outputs/apk/release/*.apk
