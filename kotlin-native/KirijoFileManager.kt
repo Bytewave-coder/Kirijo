@@ -1,6 +1,5 @@
 package com.kirijo.app
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.webkit.JavascriptInterface
@@ -8,24 +7,25 @@ import android.webkit.JavascriptInterface
 class KirijoFileManager(private val context: Context) {
     
     companion object {
-        // We temporarily store the JSON data here until the user picks a save location
         var pendingDataToExport: String = ""
+        const val CREATE_FILE_REQUEST_CODE = 1001 
     }
 
     @JavascriptInterface
     fun exportData(jsonData: String, fileName: String) {
         pendingDataToExport = jsonData
         
-        // This triggers Android's native "Save As..." dialog
+        // This intent tells Android we want to create a new file
+        // and open the UI picker safely!
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
-            type = "application/json"
+            type = "application/json" 
             putExtra(Intent.EXTRA_TITLE, fileName)
         }
         
-        if (context is Activity) {
-            // "1001" is an ID we will listen for in MainActivity
-            context.startActivityForResult(intent, 1001)
-        }
+        // Broadcast this to MainActivity to handle the UI picker
+        val broadcastIntent = Intent("com.kirijo.app.EXPORT_FILE_ACTION")
+        broadcastIntent.putExtra("exportIntent", intent)
+        context.sendBroadcast(broadcastIntent)
     }
 }
