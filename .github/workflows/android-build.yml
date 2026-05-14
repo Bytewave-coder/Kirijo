@@ -41,7 +41,7 @@ jobs:
 
       - name: Create Android Project
         run: |
-          npx cap add android
+          npx cap add android || true
 
       - name: Sync Capacitor
         run: |
@@ -69,12 +69,6 @@ jobs:
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
-              }
-          }
-
-          tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-              kotlinOptions {
-                  jvmTarget = "17"
               }
           }
           ' >> android/app/build.gradle
