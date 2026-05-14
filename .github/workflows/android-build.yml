@@ -35,9 +35,6 @@ jobs:
       - name: Build Next.js App
         run: npm run build
 
-      - name: Export Static Files
-        run: npx next export
-
       - name: Install Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
