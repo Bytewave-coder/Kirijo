@@ -5,6 +5,8 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -79,16 +81,15 @@ jobs:
               <application
                   android:allowBackup="true"
                   android:label="Kirijo"
-                  android:supportsRtl="true"
-                  android:theme="@style/AppTheme">
+                  android:supportsRtl="true">
 
                   <activity
-                      android:name=".MainActivity"
+                      android:name="com.getcapacitor.BridgeActivity"
                       android:exported="true">
 
                       <intent-filter>
-                          <action android:name="android.intent.action.MAIN"/>
-                          <category android:name="android.intent.category.LAUNCHER"/>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
 
                   </activity>
@@ -100,10 +101,49 @@ jobs:
 
       - name: Force Java 17 Compatibility
         run: |
-          find android -name "*.gradle" -type f -exec sed -i 's/VERSION_21/VERSION_17/g' {} \;
-          find android -name "*.gradle" -type f -exec sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' {} \;
-          find android -name "*.gradle" -type f -exec sed -i 's/sourceCompatibility = JavaVersion.VERSION_21/sourceCompatibility = JavaVersion.VERSION_17/g' {} \;
-          find android -name "*.gradle" -type f -exec sed -i 's/targetCompatibility = JavaVersion.VERSION_21/targetCompatibility = JavaVersion.VERSION_17/g' {} \;
+          find android -name "*.gradle" -type f -exec sed -i 's/VERSION_21/VERSION_17/g' {} \; || true
+          find android -name "*.gradle" -type f -exec sed -i 's/jvmTarget = "21"/jvmTarget = "17"/g' {} \; || true
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/kirijo.keystore
+
+      - name: Create Keystore Properties
+        run: |
+          cat <<EOF > android/keystore.properties
+          storeFile=../app/kirijo.keystore
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          EOF
+
+      - name: Enable APK Signing
+        run: |
+          cat <<EOF >> android/app/build.gradle
+
+          def keystorePropertiesFile = rootProject.file("keystore.properties")
+          def keystoreProperties = new Properties()
+          keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file(keystoreProperties['storeFile'])
+                      storePassword keystoreProperties['storePassword']
+                      keyAlias keystoreProperties['keyAlias']
+                      keyPassword keystoreProperties['keyPassword']
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                      minifyEnabled false
+                      shrinkResources false
+                  }
+              }
+          }
+          EOF
 
       - name: Build Release APK
         run: |
@@ -113,10 +153,11 @@ jobs:
 
       - name: Rename APK
         run: |
-          mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/kirijo-release.apk
+          mv android/app/build/outputs/apk/release/app-release.apk \
+             android/app/build/outputs/apk/release/kirijo-release.apk || true
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: kirijo-release-apk
-          path: android/app/build/outputs/apk/release/kirijo-release.apk
+          path: android/app/build/outputs/apk/release/*.apk
