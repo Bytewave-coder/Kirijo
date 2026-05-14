@@ -2,9 +2,6 @@ name: Build Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   build:
@@ -20,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -43,7 +40,7 @@ jobs:
 
       - name: Create Android Project
         run: |
-          npx cap add android || true
+          npx cap add android
 
       - name: Sync Capacitor
         run: |
@@ -51,10 +48,9 @@ jobs:
 
       - name: Add Android Permissions
         run: |
-          sed -i '/<manifest/a\
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>\
-              <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
+          perl -0777 -i -pe 's|<manifest|<manifest\n    xmlns:tools="http://schemas.android.com/tools"|g' android/app/src/main/AndroidManifest.xml
+
+          perl -0777 -i -pe 's|<application|<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />\n\n<application|g' android/app/src/main/AndroidManifest.xml
 
       - name: Add Launcher Activity
         run: |
@@ -68,9 +64,17 @@ jobs:
         run: |
           echo '
           android {
+              compileSdkVersion 34
+
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+
+          tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+              kotlinOptions {
+                  jvmTarget = "17"
               }
           }
           ' >> android/app/build.gradle
@@ -83,10 +87,10 @@ jobs:
 
       - name: Rename APK
         run: |
-          mv android/app/build/outputs/apk/release/app-release-unsigned.apk kirijo.apk
+          mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/kirijo-release.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: kirijo-release-apk
-          path: kirijo.apk
+          path: android/app/build/outputs/apk/release/kirijo-release.apk
