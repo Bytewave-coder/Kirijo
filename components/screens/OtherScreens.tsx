@@ -373,7 +373,7 @@ export function ArchiveScreen() {
              <div className="text-[13px] text-text-faint leading-relaxed">Archived wishes will appear here.</div>
           </div>
         ) : (
-          <AnimatePresence>
+                    <AnimatePresence>
             {archived.map((w, i) => (
                <WishCard key={w.id} wish={w} index={i} onClick={() => openDetail(w.id)} />
             ))}
@@ -460,4 +460,5 @@ export function SearchScreen() {
       </div>
     </div>
   );
-}
+      }
+        
